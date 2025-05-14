@@ -30,6 +30,14 @@ export default function HomeScreen({ navigation }) {
           onPress={() => navigation.navigate('Profile')}>
           <Text style={styles.buttonText}>Mon Profil 👤</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('ScanQR')}
+      >
+        <Text style={styles.buttonText}>Scanner un QR Code 📷</Text>
+      </TouchableOpacity>
+
+
 
     </View>
   );

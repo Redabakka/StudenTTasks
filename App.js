@@ -25,7 +25,7 @@ export default function App() {
         <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
         <Stack.Screen name="EditTask" component={EditTaskScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
-        
+        <Stack.Screen name="ScanQR" component={ScanQRScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>
