@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { getAllTasks, deleteTask, toggleTaskStatus } from '../database/taskService_firebase';
+import {
+  View, Text, FlatList, TouchableOpacity,
+  StyleSheet, Alert
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  getTasksByUser,
+  deleteTask,
+  toggleTaskStatus
+} from '../database/taskService_firebase';
 
-export default function TaskListScreen({ navigation }) {
+export default function TaskListScreen({ navigation, route }) {
+  const { user } = route.params;
+
   const [tasks, setTasks] = useState([]);
 
   const chargerTaches = async () => {
-    const data = await getAllTasks();
+    const data = await getTasksByUser(user.email);
     setTasks(data);
   };
 
@@ -55,27 +65,35 @@ export default function TaskListScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.navigate('EditTask', { taskId: item.id })}>
           <Text style={styles.actionButton}>✏️</Text>
         </TouchableOpacity>
-
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>📝 Mes Tâches</Text>
       <FlatList
         data={tasks}
         keyExtractor={item => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.emptyText}>Aucune tâche pour le moment.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>Aucune tâche pour le moment.</Text>
+        }
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#f8faff' },
-  heading: { fontSize: 22, fontWeight: 'bold', marginBottom: 10, textAlign: 'center', color: '#2a2a72' },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#2a2a72'
+  },
   card: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -1,15 +1,21 @@
-// AddTaskScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from 'react-native';
 import { addTask } from '../database/taskService_firebase';
-import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Ajouter une tache a partir d'un formulaire 
-export default function AddTaskScreen() {
+export default function AddTaskScreen({ route, navigation }) {
+  const { user } = route.params;
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dateFin, setDateFin] = useState('');
-  const navigation = useNavigation();
 
   const handleAdd = async () => {
     if (!title || !dateFin) {
@@ -17,13 +23,17 @@ export default function AddTaskScreen() {
       return;
     }
 
-    await addTask(title, description, dateFin);
-    Alert.alert('Succès', 'Tâche ajoutée avec succès.');
-    navigation.goBack();
+    try {
+      await addTask(title, description, dateFin, user.email);
+      Alert.alert('Succès', 'Tâche ajoutée avec succès.');
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('Erreur', 'Échec lors de l’ajout de la tâche.');
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>➕ Nouvelle Tâche</Text>
 
       <TextInput
@@ -51,21 +61,45 @@ export default function AddTaskScreen() {
       <TouchableOpacity style={styles.button} onPress={handleAdd}>
         <Text style={styles.buttonText}>Ajouter la tâche</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f8ff' },
-  heading: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#2a2a72' },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: '#f5f8ff',
+    justifyContent: 'center',
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#2a2a72',
+  },
   input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    padding: 12, marginBottom: 15, backgroundColor: '#fff'
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    backgroundColor: '#fff',
   },
-  multiline: { height: 100, textAlignVertical: 'top' },
+  multiline: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
   button: {
-    backgroundColor: '#2a2a72', paddingVertical: 14,
-    borderRadius: 8, alignItems: 'center'
+    backgroundColor: '#2a2a72',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' }
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });

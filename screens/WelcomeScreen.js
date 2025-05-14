@@ -1,6 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  View, Text,StyleSheet,TouchableOpacity,Animated,Dimensions} from 'react-native';
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+} from 'react-native';
 import LottieView from 'lottie-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -28,21 +34,38 @@ export default function WelcomeScreen({ navigation }) {
   return (
     <LinearGradient colors={['#e0f7fa', '#e1bee7']} style={styles.container}>
       <LottieView
-        source={require('../assets/animation.json')} // 🔁 Télécharge une animation depuis lottiefiles.com
+        source={require('../assets/animation.json')}
         autoPlay
         loop
         style={styles.lottie}
       />
-      <Animated.Text style={[styles.title, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+      <Animated.Text
+        style={[
+          styles.title,
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+        ]}
+      >
         Bienvenue sur StudentTasks 🎯
       </Animated.Text>
       <Animated.Text style={[styles.subtitle, { opacity: fadeAnim }]}>
         Organise tes tâches comme un pro 🚀
       </Animated.Text>
 
-      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.replace('Home')}>
-          <Text style={styles.buttonText}>Commencer</Text>
+      <Animated.View
+        style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+      >
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('Register')}
+        >
+          <Text style={styles.buttonText}>Créer un compte</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#6a1b9a', marginTop: 10 }]}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.buttonText}>Se connecter</Text>
         </TouchableOpacity>
       </Animated.View>
     </LinearGradient>

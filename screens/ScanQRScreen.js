@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Alert, Button } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { addTask } from '../database/taskService_firebase';
 
-export default function ScanQRScreen({ navigation }) {
+export default function ScanQRScreen({ navigation, route }) {
+  const { user } = route.params;
   const [permission, requestPermission] = useCameraPermissions();
-  const [scanned, setScanned] = useState(false);
+  const [cameraActive, setCameraActive] = useState(true); // 👈 État pour activer/désactiver la caméra
 
   useEffect(() => {
-    if (!permission) {
-      requestPermission(); // Demande la permission dès que le composant se monte
-    }
+    if (!permission) requestPermission();
   }, [permission]);
 
-  const handleBarCodeScanned = async ({ type, data }) => {
-    if (scanned) return;
-    setScanned(true);
+  const handleBarCodeScanned = async ({ data }) => {
+    // 🔐 Désactive immédiatement la caméra
+    setCameraActive(false);
 
     try {
       const parsed = JSON.parse(data);
 
       if (!parsed.title || !parsed.description || !parsed.dateFin) {
-        throw new Error('Champs manquants dans le QR');
+        throw new Error("QR incomplet");
       }
 
-      await addTask(parsed.title, parsed.description, parsed.dateFin);
+      await addTask(parsed.title, parsed.description, parsed.dateFin, user.email);
+      console.log("✅ Tâche ajoutée avec succès");
 
       Alert.alert(
         "QR Code détecté",
@@ -32,42 +32,36 @@ export default function ScanQRScreen({ navigation }) {
         [
           {
             text: "Voir mes tâches",
-            onPress: () => {
-              setScanned(false);
-              navigation.navigate('TaskList');
-            }
+            onPress: () => navigation.navigate("TaskList", { user })
           }
-        ],
-        { cancelable: false }
+        ]
       );
-    } catch (error) {
-      console.error(error);
-      Alert.alert("❌ Erreur", "Impossible de lire ce QR Code.");
-      setScanned(false);
+    } catch (err) {
+      console.error("Erreur QR :", err.message);
+      Alert.alert("Erreur", "QR invalide.");
     }
   };
 
-  if (!permission) return <Text>Chargement des permissions...</Text>;
+  if (!permission) return <Text>Chargement permissions...</Text>;
 
   if (!permission.granted) {
     return (
       <View style={styles.container}>
-        <Text>Permission caméra non accordée.</Text>
-        <Button title="Autoriser la caméra" onPress={requestPermission} />
+        <Text>Caméra non autorisée</Text>
+        <Button title="Demander permission" onPress={requestPermission} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <CameraView
-        style={StyleSheet.absoluteFillObject}
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-      />
-      {scanned && (
-        <Text style={styles.text}>
-          ✅ QR scanné — Recharge pour scanner à nouveau
-        </Text>
+      {cameraActive ? (
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          onBarcodeScanned={handleBarCodeScanned}
+        />
+      ) : (
+        <Text style={styles.text}>✅ Scan terminé. Redirection...</Text>
       )}
     </View>
   );

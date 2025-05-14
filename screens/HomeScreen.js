@@ -1,48 +1,71 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+//import { checkTasksAndNotify } from '../notifications/notificationService';
 
+export default function HomeScreen({ navigation, route }) {
+  const { user } = route.params;
 
-// function principale du home screen qui affiche tous les informations
-export default function HomeScreen({ navigation }) {
+  // Vérifie les tâches à CHAQUE retour sur cet écran
+  //useFocusEffect(
+   // React.useCallback(() => {
+     // checkTasksAndNotify(user.email);
+   // }, [user.email])
+ // );
+
   return (
-    // ici unr animation depuis lottiefiles
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <LottieView
-        source={require('../assets/Animation2.json')} 
+        source={require('../assets/Animation2.json')}
         autoPlay
         loop
         style={styles.animation}
       />
 
-      <Text style={styles.title}>Bienvenue sur StudentTasks 🎓</Text>
-      <Text style={styles.subtitle}>Organise tes tâches facilement et reste productif !</Text>
+      <Text style={styles.title}>Bienvenue {user.fullName} 👋</Text>
+      <Text style={styles.subtitle}>Statut : {user.status}</Text>
+      <Text style={styles.subtitle}>Email : {user.email}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('TaskList')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('TaskList', { user })}
+      >
         <Text style={styles.buttonText}>Voir mes tâches</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('AddTask')}>
-        <Text style={styles.buttonText}>Ajouter une tâche</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.button}
-          onPress={() => navigation.navigate('Profile')}>
-          <Text style={styles.buttonText}>Mon Profil 👤</Text>
-      </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('ScanQR')}
+        onPress={() => navigation.navigate('AddTask', { user })}
+      >
+        <Text style={styles.buttonText}>Ajouter une tâche</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Profile', { email: user.email })}
+      >
+        <Text style={styles.buttonText}>Mon Profil 👤</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('ScanQR', { user })}
       >
         <Text style={styles.buttonText}>Scanner un QR Code 📷</Text>
       </TouchableOpacity>
 
-
-
-    </View>
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={() => navigation.replace('Welcome')}
+      >
+        <Text style={styles.logoutText}>Se déconnecter</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
-// le style pour notre page 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -57,26 +80,36 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#2a2a72',
-    marginBottom: 10,
+    marginBottom: 5,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#555',
-    marginBottom: 30,
+    marginBottom: 10,
     textAlign: 'center',
   },
   button: {
     backgroundColor: '#2a2a72',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+    paddingVertical: 14,
+    width: '80%',
     borderRadius: 30,
-    marginTop: 15,
+    marginTop: 10,
+    alignItems: 'center',
   },
   buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  logoutButton: {
+    backgroundColor: '#d32f2f',
+    marginTop: 30,
+  },
+  logoutText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',

@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, Alert } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  Alert,
+  TouchableOpacity
+} from 'react-native';
 import { getTaskById, updateTask } from '../database/taskService_firebase';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EditTaskScreen({ route, navigation }) {
   const { taskId } = route.params;
@@ -11,13 +19,18 @@ export default function EditTaskScreen({ route, navigation }) {
 
   useEffect(() => {
     const fetchData = async () => {
-      const task = await getTaskById(taskId);
-      if (task) {
-        setTitle(task.title);
-        setDescription(task.description || '');
-        setDateFin(task.dateFin || '');
-      } else {
-        Alert.alert("Erreur", "Tâche introuvable");
+      try {
+        const task = await getTaskById(taskId);
+        if (task) {
+          setTitle(task.title);
+          setDescription(task.description || '');
+          setDateFin(task.dateFin || '');
+        } else {
+          Alert.alert("Erreur", "Tâche introuvable");
+          navigation.goBack();
+        }
+      } catch (err) {
+        Alert.alert("Erreur", "Impossible de charger la tâche");
         navigation.goBack();
       }
     };
@@ -29,13 +42,20 @@ export default function EditTaskScreen({ route, navigation }) {
       Alert.alert("Erreur", "Le titre est requis");
       return;
     }
-    await updateTask(taskId, { title, description, dateFin });
-    Alert.alert("Succès", "Tâche mise à jour !");
-    navigation.goBack();
+
+    try {
+      await updateTask(taskId, { title, description, dateFin });
+      Alert.alert("Succès", "Tâche mise à jour !");
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert("Erreur", "Échec de la mise à jour");
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.heading}>📝 Modifier la tâche</Text>
+
       <Text style={styles.label}>Titre :</Text>
       <TextInput
         style={styles.input}
@@ -46,10 +66,11 @@ export default function EditTaskScreen({ route, navigation }) {
 
       <Text style={styles.label}>Description :</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.multiline]}
         placeholder="Description"
         value={description}
         onChangeText={setDescription}
+        multiline
       />
 
       <Text style={styles.label}>Date de fin :</Text>
@@ -60,19 +81,54 @@ export default function EditTaskScreen({ route, navigation }) {
         onChangeText={setDateFin}
       />
 
-      <Button title="Enregistrer les modifications" onPress={handleUpdate} />
-    </View>
+      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+        <Text style={styles.buttonText}>Enregistrer les modifications</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  label: { fontWeight: 'bold', marginBottom: 5, marginTop: 15 },
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    backgroundColor: '#f5f8ff'
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#2a2a72',
+    marginBottom: 20
+  },
+  label: {
+    fontWeight: '600',
+    marginBottom: 6,
+    marginTop: 12,
+    color: '#333'
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 10,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#fff'
+  },
+  multiline: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  button: {
+    backgroundColor: '#2a2a72',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 25,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

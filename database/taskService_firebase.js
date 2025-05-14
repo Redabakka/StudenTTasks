@@ -1,11 +1,9 @@
-// taskService_firebase.js
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import db from '../database/firebase';
-import { getDoc } from 'firebase/firestore'; 
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, getDoc, query, where } from 'firebase/firestore';
+import { db } from './firebase';
 
 const TASKS_COLLECTION = 'tasks';
 
-// Lire une tâche par ID
+// 🔹 Lire une tâche par ID
 export const getTaskById = async (id) => {
   try {
     const docRef = doc(db, TASKS_COLLECTION, id);
@@ -22,17 +20,17 @@ export const getTaskById = async (id) => {
   }
 };
 
-
-// Ajouter une tâche
-export const addTask = async (title, description, dateFin) => {
+// 🔹 Ajouter une tâche liée à un utilisateur
+export const addTask = async (title, description, dateFin, emailUtilisateur) => {
   try {
-    const dateCreation = new Date().toISOString(); // ajuste la date de la creation en in real time
+    const dateCreation = new Date().toISOString();
     const docRef = await addDoc(collection(db, TASKS_COLLECTION), {
       title,
       description,
       dateCreation,
       dateFin,
       isDone: false,
+      emailUtilisateur, // 🔗 Lien avec l'utilisateur
     });
     console.log("✅ Tâche ajoutée avec ID:", docRef.id);
     return docRef.id;
@@ -41,18 +39,22 @@ export const addTask = async (title, description, dateFin) => {
   }
 };
 
-// Lire toutes les tâches
-export const getAllTasks = async () => {
+// 🔹 Lire toutes les tâches de l'utilisateur
+export const getTasksByUser = async (emailUtilisateur) => {
   try {
-    const querySnapshot = await getDocs(collection(db, TASKS_COLLECTION));
+    const q = query(
+      collection(db, TASKS_COLLECTION),
+      where('emailUtilisateur', '==', emailUtilisateur)
+    );
+    const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
-    console.error("❌ Erreur lecture tâches:", error);
+    console.error("❌ Erreur lecture tâches utilisateur:", error);
     return [];
   }
 };
 
-// Supprimer une tâche
+// 🔹 Supprimer une tâche
 export const deleteTask = async (id) => {
   try {
     await deleteDoc(doc(db, TASKS_COLLECTION, id));
@@ -62,7 +64,7 @@ export const deleteTask = async (id) => {
   }
 };
 
-// Marquer une tâche comme faite / non faite
+// 🔹 Marquer une tâche comme faite / non faite
 export const toggleTaskStatus = async (id, isDone) => {
   try {
     await updateDoc(doc(db, TASKS_COLLECTION, id), {
@@ -74,13 +76,12 @@ export const toggleTaskStatus = async (id, isDone) => {
   }
 };
 
-// Mettre à jour une tâche
+// 🔹 Mettre à jour une tâche (titre, description, etc.)
 export const updateTask = async (id, updatedFields) => {
   try {
-    await updateDoc(doc(db, 'tasks', id), updatedFields);
+    await updateDoc(doc(db, TASKS_COLLECTION, id), updatedFields);
     console.log("📝 Tâche mise à jour :", id);
   } catch (error) {
     console.error("❌ Erreur update :", error);
   }
 };
-
