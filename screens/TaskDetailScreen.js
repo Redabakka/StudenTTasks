@@ -17,6 +17,19 @@ export default function TaskDetailScreen({ route }) {
     fetchTask();
   }, [taskId]);
 
+  const formatDateTime = (input) => {
+    const dateObj = input?.toDate?.() || new Date(input);
+    if (isNaN(dateObj.getTime())) return 'Date inconnue';
+    return dateObj.toLocaleString('fr-FR', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -41,10 +54,10 @@ export default function TaskDetailScreen({ route }) {
       <Text style={styles.text}>{task.description || 'Aucune'}</Text>
 
       <Text style={styles.label}>Créée le :</Text>
-      <Text style={styles.text}>{new Date(task.dateCreation).toLocaleDateString()}</Text>
+      <Text style={styles.text}>{formatDateTime(task.dateCreation)}</Text>
 
       <Text style={styles.label}>À finir avant :</Text>
-      <Text style={styles.text}>{new Date(task.dateFin).toLocaleDateString()}</Text>
+      <Text style={styles.text}>{formatDateTime(task.dateFin)}</Text>
 
       <Text style={styles.label}>Statut :</Text>
       <Text style={[styles.text, { color: task.isDone ? 'green' : 'red', fontWeight: 'bold' }]}>

@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity, Picker } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Keyboard,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Platform
+} from 'react-native';
 import { db } from '../database/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
@@ -31,25 +42,47 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Créer un compte</Text>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Créer un compte</Text>
 
-      <TextInput placeholder="Nom complet" value={fullName} onChangeText={setFullName} style={styles.input} />
-      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" />
-      <TextInput placeholder="Mot de passe" value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
-      
-      <Text style={styles.label}>Statut :</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="étudiant ou professeur"
-        value={status}
-        onChangeText={setStatus}
-      />
+          <TextInput
+            placeholder="Nom complet"
+            value={fullName}
+            onChangeText={setFullName}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <TextInput
+            placeholder="Mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+            secureTextEntry
+          />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>S'inscrire</Text>
-      </TouchableOpacity>
-    </View>
+          <Text style={styles.label}>Statut :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="étudiant ou professeur"
+            value={status}
+            onChangeText={setStatus}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>S'inscrire</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 

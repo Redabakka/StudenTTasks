@@ -20,17 +20,19 @@ export const getTaskById = async (id) => {
   }
 };
 
-// 🔹 Ajouter une tâche liée à un utilisateur
+//  Ajouter une tâche liée à un utilisateur
 export const addTask = async (title, description, dateFin, emailUtilisateur) => {
   try {
-    const dateCreation = new Date().toISOString();
+    const dateCreation = new Date();
+    const dateFinObj = dateFin instanceof Date ? dateFin : new Date(dateFin);
+
     const docRef = await addDoc(collection(db, TASKS_COLLECTION), {
       title,
       description,
       dateCreation,
-      dateFin,
+      dateFin: dateFinObj,
       isDone: false,
-      emailUtilisateur, // 🔗 Lien avec l'utilisateur
+      emailUtilisateur,
     });
     console.log("✅ Tâche ajoutée avec ID:", docRef.id);
     return docRef.id;
@@ -38,6 +40,7 @@ export const addTask = async (title, description, dateFin, emailUtilisateur) => 
     console.error("❌ Erreur ajout tâche:", error);
   }
 };
+
 
 // 🔹 Lire toutes les tâches de l'utilisateur
 export const getTasksByUser = async (emailUtilisateur) => {

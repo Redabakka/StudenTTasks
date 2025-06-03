@@ -1,20 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { getUserByEmail } from '../database/userService_firebase';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  TextInput,
+  Alert
+} from 'react-native';
+import { getUserByEmail, updateUserInfo } from '../database/userService_firebase';
 
 export default function ProfileScreen({ navigation, route }) {
   const { email } = route.params;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
       const data = await getUserByEmail(email);
-      if (data) setUser(data);
+      if (data) {
+        setUser(data);
+        setNewName(data.fullName);
+        setNewStatus(data.status);
+      }
       setLoading(false);
     };
     fetchProfile();
   }, []);
+
+  const handleSave = async () => {
+    if (!newName.trim() || !newStatus.trim()) {
+      Alert.alert("Erreur", "Tous les champs sont requis.");
+      return;
+    }
+
+    try {
+      await updateUserInfo(email, {
+        fullName: newName,
+        status: newStatus
+      });
+      setUser({ ...user, fullName: newName, status: newStatus });
+      setIsEditing(false);
+      Alert.alert("Succès", "Profil mis à jour.");
+    } catch (error) {
+      Alert.alert("Erreur", "Échec de la mise à jour.");
+    }
+  };
 
   if (loading) {
     return (
@@ -40,13 +74,31 @@ export default function ProfileScreen({ navigation, route }) {
       <Text style={styles.title}>Profil</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Nom :</Text>
-        <Text style={styles.value}>{user.fullName}</Text>
+        {isEditing ? (
+          <TextInput style={styles.input} value={newName} onChangeText={setNewName} />
+        ) : (
+          <Text style={styles.value}>{user.fullName}</Text>
+        )}
 
         <Text style={styles.label}>Email :</Text>
         <Text style={styles.value}>{user.email}</Text>
 
         <Text style={styles.label}>Statut :</Text>
-        <Text style={styles.value}>{user.status}</Text>
+        {isEditing ? (
+          <TextInput style={styles.input} value={newStatus} onChangeText={setNewStatus} />
+        ) : (
+          <Text style={styles.value}>{user.status}</Text>
+        )}
+
+        {isEditing ? (
+          <TouchableOpacity style={styles.smallButton} onPress={handleSave}>
+            <Text style={styles.smallButtonText}>💾 Enregistrer</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.smallButton} onPress={() => setIsEditing(true)}>
+            <Text style={styles.smallButtonText}>✏️ Modifier le profil</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <TouchableOpacity style={styles.button} onPress={() => navigation.replace('Welcome')}>
@@ -97,6 +149,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: '#fff',
+  },
+  smallButton: {
+    backgroundColor: '#eee',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginTop: 15,
+  },
+  smallButtonText: {
+    fontSize: 14,
+    color: '#2a2a72',
+    fontWeight: '600',
   },
   button: {
     backgroundColor: '#2a2a72',

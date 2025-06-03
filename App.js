@@ -15,6 +15,8 @@ import EditTaskScreen from './screens/EditTaskScreen';
 import TaskDetailScreen from './screens/TaskDetailScreen';
 import ScanQRScreen from './screens/ScanQRScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import DashboardScreen from './screens/DashboardScreen';
+
 
 // Configuration du comportement des notifications
 Notifications.setNotificationHandler({
@@ -53,6 +55,7 @@ export default function App() {
         <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
         <Stack.Screen name="ScanQR" component={ScanQRScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Dashboard" component={DashboardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

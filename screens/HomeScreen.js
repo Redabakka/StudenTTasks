@@ -1,19 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-//import { checkTasksAndNotify } from '../notifications/notificationService';
+import { getUserByEmail } from '../database/userService_firebase';
+// import { checkTasksAndNotify } from '../notifications/notificationService';
 
 export default function HomeScreen({ navigation, route }) {
-  const { user } = route.params;
+  const { user: initialUser } = route.params;
+  const [user, setUser] = useState(initialUser);
 
-  // Vérifie les tâches à CHAQUE retour sur cet écran
-  //useFocusEffect(
-   // React.useCallback(() => {
-     // checkTasksAndNotify(user.email);
-   // }, [user.email])
- // );
+  // Actualise les infos utilisateur à chaque fois qu'on revient sur cet écran
+  useFocusEffect(
+    React.useCallback(() => {
+      const refreshUser = async () => {
+        const updatedUser = await getUserByEmail(initialUser.email);
+        if (updatedUser) setUser(updatedUser);
+      };
+
+      refreshUser();
+      // Optionnel : déclencher les notifications automatiquement
+      // await checkTasksAndNotify(initialUser.email);
+    }, [initialUser.email])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,6 +64,14 @@ export default function HomeScreen({ navigation, route }) {
       >
         <Text style={styles.buttonText}>Scanner un QR Code 📷</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('Dashboard', { user })}
+        >
+          <Text style={styles.buttonText}>📊 Tableau de bord</Text>
+      </TouchableOpacity>
+
 
       <TouchableOpacity
         style={[styles.button, styles.logoutButton]}

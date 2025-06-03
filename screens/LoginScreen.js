@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Keyboard,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Platform
+} from 'react-native';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../database/firebase';
-import { checkTasksAndNotify } from '../notifications/notificationService'; // ✅ Import notification
+import { checkTasksAndNotify } from '../notifications/notificationService'; // ✅ Notification auto
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -25,10 +36,10 @@ export default function LoginScreen({ navigation }) {
         if (userData.password === password) {
           Alert.alert('Connexion réussie', `Bienvenue ${userData.fullName}`);
 
-          // ✅ Lance la notification (une seule fois)
+          // ✅ Notifications en fonction des tâches
           await checkTasksAndNotify(userData.email);
 
-          // ✅ Remplace l'écran au lieu d'empiler
+          // ✅ Remplace l'écran (pas juste empiler)
           navigation.replace('Home', { user: userData });
         } else {
           Alert.alert('Erreur', 'Mot de passe incorrect.');
@@ -42,32 +53,38 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Connexion</Text>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Connexion</Text>
 
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Mot de passe"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            style={styles.input}
+            autoCapitalize="none"
+          />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Se connecter</Text>
-      </TouchableOpacity>
+          <TextInput
+            placeholder="Mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.input}
+          />
 
-      <Text onPress={() => navigation.navigate('Register')} style={styles.link}>
-        Pas encore de compte ? S'inscrire
-      </Text>
-    </View>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Se connecter</Text>
+          </TouchableOpacity>
+
+          <Text onPress={() => navigation.navigate('Register')} style={styles.link}>
+            Pas encore de compte ? S'inscrire
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
